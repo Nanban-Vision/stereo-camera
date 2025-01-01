@@ -14,6 +14,8 @@ mtx_right = data['mtx_right']
 dist_right = data['dist_right']
 R = data['R']
 T = data['T']
+E = data['E']
+F = data['F']
 
 def calculate_distance(frame_left, frame_right, x_min, y_min, x_max, y_max):
     frame_left_undistorted = cv2.undistort(frame_left, mtx_left, dist_left)
@@ -55,7 +57,7 @@ def calculate_distance(frame_left, frame_right, x_min, y_min, x_max, y_max):
 
     disparity = stereo.compute(rect_left, rect_right)
 
-    focal_length = P1[0, 0]  
+    focal_length = (P1[0, 0] * P2[0, 0]) / (P1[0, 0] + P2[0, 0]) 
     baseline = np.linalg.norm(T)
 
     disparity = np.where(disparity == 0, 0.001, disparity)
