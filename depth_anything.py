@@ -6,6 +6,7 @@ import math
 import yaml
 import cv2
 from PIL import Image
+import numpy as np
 
 image_filename = "captured_image.jpg"
 model = YOLO('models/yolov8m-seg.pt')
@@ -55,14 +56,18 @@ def scan_mode():
                 x_min, y_min, x_max, y_max = coordinates[0][0].item(),coordinates[0][1].item(),coordinates[0][2].item(),coordinates[0][3].item()
                 position = check_location(int(x_min), int(y_min), int(x_max), int(y_max), frame_width, frame_height)
                 image = convert_opencv_to_pil(frame[int(y_min):int(y_max), int(x_min):int(x_max)])
-                distance = pipe(image)["depth"]
-                print(distance)
-                message = f"There is a {name}, around {distance:.2f} centimeters away and it is in your {position}."
-                #speak(message)
-                print(message)
+                depth_map = pipe(image)["depth"]
+                depth_array = np.array(depth_map)  
+                mean_depth = np.median(depth_array)
+                message = f"There is a {name}, around {mean_depth:.2f} centimeters away and it is in your {position}."
+                speak(message)
     except Exception as e:
         print(f"Error: {e}")
         import traceback
         traceback.print_exc()
+    finally:
+        cap.release()
+        cv2.destroyAllWindows()
 
-scan_mode()
+while True:
+    scan_mode()
